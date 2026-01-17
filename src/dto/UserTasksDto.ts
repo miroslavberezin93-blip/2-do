@@ -1,4 +1,4 @@
-import type { TaskItemDto } from "./TaskItemDto";
+import type { TaskItemDto } from "./taskItemDto";
 
 export interface UserTasksDto {
     username: string;
