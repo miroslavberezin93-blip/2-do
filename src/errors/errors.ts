@@ -5,10 +5,10 @@ export class ConflictError extends Error {}
 export class ApiError extends Error {
     constructor(
         message: string,
-        status?: number
+        status: number
     ) {
         super(message);
         this.status = status;
     }
-    public status?: number;
+    public status: number;
 }
