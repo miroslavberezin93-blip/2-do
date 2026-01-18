@@ -1,6 +1,7 @@
 import axios from "axios";
-import { authStore } from "../store/authStore";
+import { authStoreManager } from "../store/authStoreManager";
 import type { TokenResponseDto } from "../dto/tokenReponseDto";
+import type { InternalAxiosRequestConfig } from "axios";
 
 export const api = axios.create({
     baseURL: import.meta.env.VITE_API_URL,
@@ -11,26 +12,33 @@ export const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-    const token = authStore.getState().accessToken;
-    if (token) config.headers.Authorization = `Bearer ${token}`;
+    const token = authStoreManager.getAccessToken();
+    if (token) {
+        config.headers = config.headers ?? {};
+        config.headers.Authorization = `Bearer ${token}`;
+    }
     return config;
 });
 
 api.interceptors.response.use(
     (res) => res,
     async (error) => {
-        const originalReq = error.config;
+        if (!axios.isAxiosError(error)) {
+            return Promise.reject(error);
+        }
+        const originalReq = error.config as RetryRequestConfig;
         
-        if(error.response?.status === 401 && !originalReq._retry) {
-            originalReq._retry = true;
+        if(error.response?.status === 401 && !originalReq.retry) {
+            originalReq.retry = true;
 
             try {
                 const res = await api.post<TokenResponseDto>("api/auth/refresh");
-                authStore.getState().setAccessToken(res.data.accessToken);
+                originalReq.headers = originalReq.headers ?? {};
                 originalReq.headers.Authorization = `Bearer ${res.data.accessToken}`;
+                authStoreManager.login(res.data.accessToken);
                 return api(originalReq);
             } catch {
-                logout();
+                authStoreManager.logout();
                 return Promise.reject(error);
             }
         }
@@ -39,7 +47,6 @@ api.interceptors.response.use(
     }
 );
 
-function logout(): void {
-    authStore.getState().setAccessToken(null);
-    authStore.getState().setIsAuth(false);
+interface RetryRequestConfig extends InternalAxiosRequestConfig {
+    retry?: boolean;
 }
