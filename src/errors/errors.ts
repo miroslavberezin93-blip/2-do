@@ -4,11 +4,11 @@ export class ConflictError extends Error {}
 
 export class ApiError extends Error {
     constructor(
-        status: number,
-        message: string
+        message: string,
+        status?: number
     ) {
         super(message);
         this.status = status;
     }
-    public status: number;
+    public status?: number;
 }

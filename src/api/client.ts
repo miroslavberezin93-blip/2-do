@@ -28,8 +28,8 @@ api.interceptors.response.use(
         }
         const originalReq = error.config as RetryRequestConfig;
         
-        if(error.response?.status === 401 && !originalReq.retry) {
-            originalReq.retry = true;
+        if(error.response?.status === 401 && !originalReq._retry) {
+            originalReq._retry = true;
 
             try {
                 const res = await api.post<TokenResponseDto>("api/auth/refresh");
@@ -48,5 +48,5 @@ api.interceptors.response.use(
 );
 
 interface RetryRequestConfig extends InternalAxiosRequestConfig {
-    retry?: boolean;
+    _retry?: boolean;
 }
