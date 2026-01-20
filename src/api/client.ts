@@ -11,15 +11,6 @@ export const api = axios.create({
     },
 });
 
-api.interceptors.request.use((config) => {
-    const token = authStoreManager.getAccessToken();
-    if (token) {
-        config.headers = config.headers ?? {};
-        config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-});
-
 api.interceptors.response.use(
     (res) => res,
     async (error) => {
