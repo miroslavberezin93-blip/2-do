@@ -16,7 +16,9 @@ export const authApi = {
   updateUsername: (dto: UsernameUpdateDto) => postData<UsernameUpdateDto, TokenResponseDto>(endpoints.user.updateUsername.path, dto),
   updatePassword: (dto: PasswordUpdateDto) => postData<PasswordUpdateDto, TokenResponseDto>(endpoints.user.updatePassword.path, dto),
   logout: async () => {
-    await api.post(endpoints.auth.logout.path);
+    await api.post(endpoints.auth.logout.path, {
+      headers: { "Use-Token": true }
+    });
     return;
   }
-}
+} as const

@@ -8,7 +8,26 @@ export const api = axios.create({
     withCredentials: true,
     headers: {
         "Content-Type": "application/json"
-    },
+    }
+});
+
+const tryRefresh = async (): Promise<TokenResponseDto> => {
+  return (await axios.post<TokenResponseDto>(
+    `${import.meta.env.VITE_API_URL}/api/auth/refresh`,
+    {},
+    { withCredentials: true }
+  )).data;
+};
+
+api.interceptors.request.use((config) => {
+    if(config.headers && config.headers["Use-Token"]) {
+        const token = authStoreManager.getAccessToken();
+        if(token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        delete config.headers["Use-Token"];
+    }
+    return config;
 });
 
 api.interceptors.response.use(
@@ -23,10 +42,10 @@ api.interceptors.response.use(
             originalReq._retry = true;
 
             try {
-                const res = await api.post<TokenResponseDto>("api/auth/refresh");
+                const res = await tryRefresh();
                 originalReq.headers = originalReq.headers ?? {};
-                originalReq.headers.Authorization = `Bearer ${res.data.accessToken}`;
-                authStoreManager.login(res.data.accessToken);
+                originalReq.headers.Authorization = `Bearer ${res.accessToken}`;
+                authStoreManager.login(res.accessToken);
                 return api(originalReq);
             } catch {
                 authStoreManager.logout();

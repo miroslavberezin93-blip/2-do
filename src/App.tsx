@@ -1,33 +1,42 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import { authService } from './api/authService';
 import './App.css'
+import type { LoginDto } from './dto/loginDto'
+import type { RegisterDto } from './dto/registerDto';
 
 function App() {
-  const [count, setCount] = useState(0)
+
+  const credentials: RegisterDto = { username: "1", password: "1" };
+  const credentials2: LoginDto = {username: credentials.username, password: credentials.password }  
+
+  const onRegister = async (): Promise<void> => {
+    try {
+      await authService.register(credentials);
+    } catch(e) {
+      console.log(e);
+    }
+  }
+
+  const onLogin = async (): Promise<void>=> {
+    try {
+      await authService.login(credentials2);
+    } catch(e) {
+      console.log(e);
+    }
+  }
+
+  const onLogout = async (): Promise<void> => {
+    try {
+      await authService.logout();
+    } catch(e) {
+      console.log(e);
+    }
+  }
 
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <button onClick={onRegister}>register</button>
+      <button onClick={onLogin}>login</button>
+      <button onClick={onLogout}>logout</button>
     </>
   )
 }
